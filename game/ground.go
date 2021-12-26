@@ -14,8 +14,8 @@ type Ground struct {
 	Speed    int
 	Counter  int
 	Sprite   *ebiten.Image
-	options1 *ebiten.DrawImageOptions
-	options2 *ebiten.DrawImageOptions
+	Options1 *ebiten.DrawImageOptions
+	Options2 *ebiten.DrawImageOptions
 }
 
 func (g *Ground) Load() error {
@@ -27,7 +27,7 @@ func (g *Ground) Load() error {
 
 	g.X1 = 0
 	g.X2 = g.Sprite.Bounds().Max.X
-	g.Y = WINDOW_HEIGHT / 2
+	g.Y = WINDOW_HEIGHT/2 + 50
 
 	g.Speed = 5
 	g.Counter = 0
@@ -36,20 +36,20 @@ func (g *Ground) Load() error {
 }
 
 func (g *Ground) Draw(screen *ebiten.Image) {
-	g.options1 = &ebiten.DrawImageOptions{}
-	g.options2 = &ebiten.DrawImageOptions{}
-	g.options1.GeoM.Translate(float64(g.X1), float64(g.Y))
-	g.options2.GeoM.Translate(float64(g.X2), float64(g.Y))
+	g.Options1 = &ebiten.DrawImageOptions{}
+	g.Options2 = &ebiten.DrawImageOptions{}
+	g.Options1.GeoM.Translate(float64(g.X1), float64(g.Y))
+	g.Options2.GeoM.Translate(float64(g.X2), float64(g.Y))
 
-	screen.DrawImage(g.Sprite, g.options1)
-	screen.DrawImage(g.Sprite, g.options2)
+	screen.DrawImage(g.Sprite, g.Options1)
+	screen.DrawImage(g.Sprite, g.Options2)
 }
 
 func (g *Ground) Update() {
 	g.Counter++
 	if g.Counter == 1000 {
 		g.Counter = 0
-		g.Speed = int(math.Min(float64(g.Speed+1), 12))
+		g.Speed = int(math.Min(float64(g.Speed+1), 15))
 		println(g.Speed)
 	}
 
