@@ -50,7 +50,6 @@ func (g *Ground) Update() {
 	if g.Counter == 1000 {
 		g.Counter = 0
 		g.Speed = int(math.Min(float64(g.Speed+1), 15))
-		println(g.Speed)
 	}
 
 	g.X1 -= g.Speed

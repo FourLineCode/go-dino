@@ -4,13 +4,18 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type Game struct{}
+type Game struct {
+	keys []ebiten.Key
+}
 
 func (g *Game) Update() error {
+	g.keys = inpututil.AppendPressedKeys(g.keys[:0])
+
 	EntityGround.Update()
-	EntityDino.Update()
+	EntityDino.Update(g.keys)
 
 	return nil
 }
