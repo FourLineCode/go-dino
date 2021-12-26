@@ -7,16 +7,25 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+type DinoState int
+
+const (
+	StateRunning    DinoState = iota
+	StateJumping    DinoState = iota
+	StateStationary DinoState = iota
+)
+
 type Dino struct {
 	X                int
 	Y                int
 	InitialHeight    int
 	Counter          int
 	Tick             int
-	State            int
 	JumpSpeed        int
 	JumpHeight       int
+	JumpMaxHeight    int
 	JumpDirection    int
+	State            DinoState
 	SpriteRun0       *ebiten.Image
 	SpriteCurrent    *ebiten.Image
 	SpriteRun1       *ebiten.Image
@@ -45,13 +54,16 @@ func (d *Dino) Load() error {
 	}
 
 	d.SpriteCurrent = d.SpriteStationary
+	d.State = StateStationary
 
 	d.X = 50
 	d.InitialHeight = WINDOW_HEIGHT/2 - 20
 	d.Y = d.InitialHeight
 	d.Counter = 0
 	d.Tick = 10
-	d.JumpSpeed = 15
+
+	d.JumpMaxHeight = 15
+	d.JumpSpeed = d.JumpMaxHeight
 	d.JumpHeight = 0
 	d.JumpDirection = -1
 
@@ -74,10 +86,10 @@ func (d *Dino) Update(keys []ebiten.Key) {
 			spacePressed = true
 		}
 	}
-	if spacePressed || d.State == 1 {
-		d.State = 1
+	if spacePressed || d.State == StateJumping {
+		d.State = StateJumping
 	} else {
-		d.State = 0
+		d.State = StateRunning
 	}
 
 	if d.Counter == 2000 {
@@ -85,13 +97,13 @@ func (d *Dino) Update(keys []ebiten.Key) {
 		d.Tick = int(math.Max(float64(d.Tick-1), 5))
 	}
 
-	if d.Counter%d.Tick == 0 && d.State == 0 {
+	if d.Counter%d.Tick == 0 && d.State == StateRunning {
 		if d.SpriteCurrent == d.SpriteRun0 {
 			d.SpriteCurrent = d.SpriteRun1
 		} else {
 			d.SpriteCurrent = d.SpriteRun0
 		}
-	} else if d.State == 1 {
+	} else if d.State == StateJumping {
 		d.SpriteCurrent = d.SpriteStationary
 		d.Y += (d.JumpSpeed) * d.JumpDirection
 		d.JumpHeight += (d.JumpSpeed) * d.JumpDirection
@@ -99,16 +111,15 @@ func (d *Dino) Update(keys []ebiten.Key) {
 		if d.JumpDirection == -1 {
 			d.JumpSpeed = int(math.Max(float64(d.JumpSpeed-1), 1))
 		} else if d.JumpDirection == 1 {
-			d.JumpSpeed = int(math.Min(float64(d.JumpSpeed+1), 15))
+			d.JumpSpeed = int(math.Min(float64(d.JumpSpeed+1), float64(d.JumpMaxHeight)))
 		}
-		println(d.JumpSpeed)
 
 		if d.JumpHeight < -120 {
 			d.JumpDirection = 1
 		}
 		if d.JumpHeight > 0 {
-			d.State = 0
-			d.JumpSpeed = 15
+			d.State = StateRunning
+			d.JumpSpeed = d.JumpMaxHeight
 			d.JumpHeight = 0
 			d.JumpDirection = -1
 			d.Y = d.InitialHeight
