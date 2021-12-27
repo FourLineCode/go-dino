@@ -1,6 +1,9 @@
 package game
 
 import (
+	"bytes"
+	_ "image/png"
+	"log"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,7 +23,12 @@ type Ground struct {
 
 func (g *Ground) Load() error {
 	var err error
-	g.Sprite, _, err = ebitenutil.NewImageFromFile("assets/ground.png")
+	imageByte, err := files.ReadFile("assets/ground.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	reader := bytes.NewReader(imageByte)
+	g.Sprite, _, err = ebitenutil.NewImageFromReader(reader)
 	if err != nil {
 		return err
 	}
@@ -29,7 +37,7 @@ func (g *Ground) Load() error {
 	g.X2 = g.Sprite.Bounds().Max.X
 	g.Y = WINDOW_HEIGHT/2 + 50
 
-	g.Speed = 5
+	g.Speed = PLATFORM_MIN_SPEED
 	g.Counter = 0
 
 	return nil
@@ -45,11 +53,15 @@ func (g *Ground) Draw(screen *ebiten.Image) {
 	screen.DrawImage(g.Sprite, g.Options2)
 }
 
-func (g *Ground) Update() {
+func (g *Ground) Update(game *Game) {
+	if game.State == GameStateLost {
+		return
+	}
+
 	g.Counter++
-	if g.Counter == 1000 {
+	if g.Counter == SPEED_INCREASE_INTERVAL {
 		g.Counter = 0
-		g.Speed = int(math.Min(float64(g.Speed+1), 15))
+		g.Speed = int(math.Min(float64(g.Speed+1), PLATFORM_MAX_SPEED))
 	}
 
 	g.X1 -= g.Speed

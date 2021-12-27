@@ -1,12 +1,16 @@
 package game
 
 import (
+	"embed"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func Run() {
+var files embed.FS
+
+func Run(f embed.FS) {
+	files = f
 	if err := LoadEntities(); err != nil {
 		log.Fatal("error loading sprites", err)
 	}

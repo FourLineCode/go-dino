@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"os"
 
 	"github.com/hajimehoshi/bitmapfont"
@@ -19,22 +20,34 @@ const (
 )
 
 type Game struct {
-	Score int
-	State GameState
-	keys  []ebiten.Key
+	Score     int
+	HighScore int
+	State     GameState
+	keys      []ebiten.Key
 }
 
 func (g *Game) Update() error {
 	g.keys = inpututil.AppendPressedKeys(g.keys[:0])
 
 	for _, key := range g.keys {
-		if key == ebiten.KeyQ {
+		if key == ebiten.KeyQ || key == ebiten.KeyEscape {
 			os.Exit(0)
+		}
+		if key == ebiten.KeySpace && g.State == GameStateLost {
+			if err := LoadEntities(); err != nil {
+				log.Fatal("error loading sprites", err)
+			}
+			g.State = GameStateRunning
+			if g.Score > g.HighScore {
+				g.HighScore = g.Score
+			}
+			g.Score = 0
+			return nil
 		}
 	}
 
-	EntityGround.Update()
-	EntityDino.Update(g.keys)
+	EntityGround.Update(g)
+	EntityDino.Update(g)
 	EntityCactus.Update(g)
 
 	return nil
@@ -48,7 +61,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	EntityDino.Draw(screen)
 
 	font := bitmapfont.Gothic12r
-	text.Draw(screen, fmt.Sprintf("SCORE: %v", g.Score), font, 30, 30, color.Black)
+
+	if g.State == GameStateRunning {
+		text.Draw(screen, fmt.Sprintf("SCORE: %v", g.Score), font, 30, 30, color.Black)
+		text.Draw(screen, fmt.Sprintf("HIGH SCORE: %v", g.HighScore), font, 30, 50, color.Black)
+	} else {
+		text.Draw(screen, fmt.Sprintf("SCORE: %v", g.Score), font, 380, 100, color.Black)
+		text.Draw(screen, "PRESS SPACE TO CONTINUE", font, 340, 120, color.Black)
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
