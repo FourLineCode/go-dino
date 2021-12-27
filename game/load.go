@@ -7,6 +7,7 @@ import (
 var (
 	EntityGround *Ground
 	EntityDino   *Dino
+	EntityCactus *Cactus
 )
 
 func LoadEntities() error {
@@ -18,6 +19,11 @@ func LoadEntities() error {
 
 	EntityDino = &Dino{}
 	if err = EntityDino.Load(); err != nil {
+		return err
+	}
+
+	EntityCactus = &Cactus{}
+	if err = EntityCactus.Load(); err != nil {
 		return err
 	}
 
